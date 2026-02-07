@@ -1,0 +1,112 @@
+version: "3.9"
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - frontend
+      - user-service
+      - product-service
+      - order-service
+    restart: unless-stopped
+    networks: [bookstore-net]
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - API_BASE=http://localhost:8000
+    restart: unless-stopped
+    networks: [bookstore-net]
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "8001:8001"
+    depends_on:
+      - user-db
+    environment:
+      - MONGODB_URI=mongodb://user-db:27017/userdb
+      - JWT_SECRET=devsecret
+    restart: unless-stopped
+    networks: [bookstore-net]
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "8002:8002"
+    depends_on:
+      - product-db
+    environment:
+      - PGHOST=product-db
+      - PGUSER=postgres
+      - PGPASSWORD=postgres
+      - PGDATABASE=products
+      - PGPORT=5432
+    restart: unless-stopped
+    networks: [bookstore-net]
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "8003:8003"
+    depends_on:
+      - order-db
+      - message-broker
+      - product-service
+    environment:
+      - PGHOST=order-db
+      - PGUSER=postgres
+      - PGPASSWORD=postgres
+      - PGDATABASE=orders
+      - PGPORT=5432
+      - RABBITMQ_URL=amqp://message-broker:5672
+      - PRODUCT_SERVICE_URL=http://product-service:8002
+    restart: unless-stopped
+    networks: [bookstore-net]
+
+  # Datastores
+  user-db:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - user-data:/data/db
+    networks: [bookstore-net]
+
+  product-db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=products
+    volumes:
+      - product-data:/var/lib/postgresql/data
+    networks: [bookstore-net]
+
+  order-db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=orders
+    volumes:
+      - order-data:/var/lib/postgresql/data
+    networks: [bookstore-net]
+  message-broker:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks: [bookstore-net]
+
+volumes:
+  user-data:
+  product-data:
+  order-data:
+
+networks:
+  bookstore-net:

@@ -1,0 +1,12 @@
+body { font-family: system-ui, Arial, sans-serif; margin: 0; background:#f5f7fb; color:#222; }
+#app { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+header { display:flex; align-items:center; justify-content:space-between; }
+h1 { margin: 0; color: #0b5; }
+#auth-bar { display:flex; gap:.5rem; align-items:center; }
+.product-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap:1rem; margin-bottom:2rem; }
+.product-card, .order-card, form { background:white; padding:1rem; border-radius:8px; box-shadow: 0 1px 3px rgba(0,0,0,.07); border:1px solid #eef; }
+.product-card h3 { margin-top:0; }
+.row { display:flex; gap:.5rem; }
+input, button { padding:.5rem .7rem; border-radius:6px; border:1px solid #ccd; }
+button { cursor:pointer; }
+#login-panel, #create-order { margin: 1rem 0; }
